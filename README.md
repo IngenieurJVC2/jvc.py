@@ -28,7 +28,7 @@ client.postTopic(
 )
 ```
 
-## Envoyer une photo sur Noelshack
+## Envoyer une photo sur NoelShack
 
 ```python
 from jvc import *
