@@ -1,4 +1,48 @@
 from requests_html import HTMLSession
+import string
+
+def setTopicPage(url, page):
+    
+    sp_url = url.split("-")
+    
+    sp_url[3] = str(page)
+
+    final_url = ""
+
+    for sp in sp_url:
+        final_url = final_url + sp + "-"
+
+    final_url = final_url[:-1]
+    
+    return final_url
+    
+def getTopicPages(url):
+
+    rp = 0
+
+    try:
+
+        s = HTMLSession()
+        g = s.get(url)
+
+        ljvs = g.html.find(".bloc-liste-num-page", first = True).find(".lien-jv")
+
+        lp = ""
+
+        if len(ljvs) > 0:
+            for ljv in ljvs:
+                t = ljv.text
+                if t.isdigit():
+                    lp = t
+
+            rp = int(lp)
+        else:
+            rp = 1
+
+    except:
+        pass
+
+    return rp
 
 def decodeTopic(topic):
 
@@ -12,6 +56,7 @@ def decodeTopic(topic):
         topic_count = topic.find(".topic-count", first = True).text
         topic_op    = topic.find(".topic-author", first = True).text
         topic_date  = topic.find(".topic-date", first = True).text
+        topic_url   = topic.find(".lien-jv", first = True).attrs["href"]
 
         r_topic = {
 
@@ -20,7 +65,8 @@ def decodeTopic(topic):
             "topic_type"    :       topic_type,
             "topic_count"   :       int(topic_count),
             "topic_author"  :       topic_op,
-            "topic_date"    :       topic_date
+            "topic_date"    :       topic_date,
+            "topic_url"     :       "http://www.jeuxvideo.com" + topic_url
 
         }
 
@@ -219,14 +265,31 @@ class JVC:
         js = g.html.find(".js-form-session-data", first = True)
         jsi = js.find("input")
 
+        ajax_hash = g.html.find("#ajax_hash_moderation_forum", first = True).attrs["value"]
+
         return [
 
             ["fs_session", jsi[0].attrs["value"]],
             ["fs_timestamp", jsi[1].attrs["value"]],
             ["fs_version", jsi[2].attrs["value"]],
-            [jsi[3].attrs["name"], jsi[3].attrs["value"]]
+            [jsi[3].attrs["name"], jsi[3].attrs["value"]],
+            ["ajax_hash", ajax_hash]
 
         ]
+
+    def deletePost(self, url, post_id):
+
+        sd = self.getSD(url)
+
+        datas = {
+            
+            "tab_message[]"         : post_id,
+            "type"                  : "delete",
+            "ajax_hash"             : sd[4][1]
+        
+        }
+
+        r = self.hsession.post("http://www.jeuxvideo.com/forums/modal_del_message.php", data = datas)
 
     def postTopic(self, url, message):
 
@@ -247,11 +310,13 @@ class JVC:
 
             r = self.hsession.post(url, data = datas)
 
-            if r.status_code == 200:
-                self.log("Message posté avec succès !")
+            if r.status_code == 200 or r.status_code == 302:
+                return True
+            else:
+                return False
 
         except:
-            self.log("Impossible de poster le message")
+            return False
 
     def createTopic(self, url, titre_topic, message_topic):
 
@@ -274,7 +339,9 @@ class JVC:
             r = self.hsession.post(url, data = datas)
 
             if r.status_code == 200:
-                self.log("Topic créé avec succès !")
+                return r.url
+            else:
+                return None
 
         except:
-            self.log("Impossible de créer le topic")
+            return None
