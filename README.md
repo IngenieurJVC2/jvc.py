@@ -99,3 +99,34 @@ Posts = getPosts("http://www.jeuxvideo.com/forums/42-51-63087978-1-0-1-0-officie
 for post in Posts:
     print(post)
 ```
+
+## Supprimer le post d'un topic : 
+
+```python
+from jvc import *
+
+client = JVC("Votre cookie coniunctio ici")
+
+client.deletePost("url_du_topic_ou_il_y_a_le_post", "id_du_post_a_supprimer")
+```
+
+## Savoir le nombre de page(s) d'un topic :
+
+```python
+from jvc import *
+
+Topic = "http://www.jeuxvideo.com/forums/42-51-63109699-1-0-1-0-alerte-gta-v-gratuit-sur-l-egs.htm"
+
+print(getTopicPages(Topic))
+```
+
+## Renvoyer l'url d'un topic en changeant la page :
+
+```python
+from jvc import *
+
+Topic = "http://www.jeuxvideo.com/forums/42-51-63109699-1-0-1-0-alerte-gta-v-gratuit-sur-l-egs.htm"
+
+print(setTopicPage(Topic, 42))
+```
+
