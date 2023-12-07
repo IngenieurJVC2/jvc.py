@@ -4,17 +4,8 @@ import string
 def setTopicPage(url, page):
     
     sp_url = url.split("-")
-    
     sp_url[3] = str(page)
-
-    final_url = ""
-
-    for sp in sp_url:
-        final_url = final_url + sp + "-"
-
-    final_url = final_url[:-1]
-    
-    return final_url
+    return "-".join(sp_url)
     
 def getTopicPages(url):
 
